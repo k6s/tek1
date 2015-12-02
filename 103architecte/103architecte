@@ -1,0 +1,379 @@
+#!/bin/python2
+## 103architecte for 103architecte in /home/cano_c/rendu/MATHS/103architecte
+## 
+## Made by 
+## Login   <cano_c@epitech.net>
+## 
+## Started on  Wed Dec 10 19:48:07 2014 
+## Last update Wed Dec 10 19:48:14 2014 
+##
+
+# matrix module
+from numpy import *
+from PyQt4 import QtGui, QtCore
+
+import sys
+import string
+import math
+import curses
+import traceback
+from dialog import Dialog
+
+# multiplication of each number in the matrice by the variable stored at the
+# same index in the matrice
+
+def         mtx_sym_mult(mtx1, mtx2):
+    for i in range(0, 3):
+        for j in range(0, 3):
+            mtx1[[j],[i]] *= mtx2[[j],[i]];
+    return (mtx1);
+
+# get transformation matrixes
+
+def         mtx_translat(vec):
+    mtx = matrix([[1, 0, vec[0]], [0, 1, vec[1]], [0, 0, 1]]);
+    return (mtx);
+
+def         mtx_homo(k1, k2):
+    mtx = matrix([[k1, 0, 0],[0, k2, 0],[0, 0, 1]]);
+    return (mtx);
+
+def         mtx_rot(a):
+    mtx = matrix([[cos(a), -sin(a), 0],[sin(a), cos(a), 0],[0, 0, 1]]);
+    return (mtx);
+
+def         mtx_rot_x(a):
+    mtx = matrix([[float(1), float(0), float(0)],[float(0), float(cos(a)),
+        float(-sin(a))],[float(0), float(sin(a)), float(cos(a))]]);
+    return (mtx);
+
+def         mtx_rot_y(a):
+    mtx = matrix([[cos(a), 0, sin(a)],[0, 1, 0],[-sin(a), 0, cos(a)]]);
+    return (mtx);
+
+def         mtx_rot_z(a):
+    mtx = matrix([[cos(a), -sin(a), 0],[sin(a), cos(a), 0],[0, 0, 1]]);
+    return (mtx);
+
+def         mtx_sym(a):
+    a = -1 * a;
+    mtx = matrix([[float(a) + -1, 0, 0],[0, 1, 0],[0, 0, 1]]);
+    return (mtx);
+
+def         mtx_proj_iso():
+    mtx = matrix([[float(0.707), float(-0.707), float(0)],[float(0.409),
+        float(0.409), float(-0.816)],[float(0.577), float(0.577), float(0.578)]]);
+    return (mtx);
+
+# Print vectors and matrix in a cleaner way than print() does.
+
+def         print_vec(vec):
+    print ("%0.2f %0.2f" % (float(vec[0]), float(vec[1]))),
+
+def         print_mtx(mtx):
+    for i in range (0, 3):
+        print "     ",;
+        for j in range (0, 3):
+            print "%0.2f" % float(mtx[[i],[j]]), '\t',;
+        if i < 2:
+            print "";
+
+# Transformation functions: get the transformation matrix and print some output
+# (type of transformation and "options")
+# returns the transformation matrix or exit() in case of error.
+
+def         do_translat_verb(i):
+    if len(sys.argv) - i - 1 >= 2:
+        v = matrix([[float(sys.argv[i + 1])], [float(sys.argv[i + 2])]]);
+        print('translation de vecteur '),;
+        trans_mtx = mtx_translat(v);
+        print_vec(v);
+        print "";
+        return (trans_mtx);
+    else:
+        print "option T (translation) needs two coordinates.";
+        exit();
+
+def         do_homo_verb(i):
+    if len(sys.argv) - i - 1 >= 2:
+        print 'homothetie de rapport ', float(sys.argv[i + 1]),;
+        print "et ", float(sys.argv[i + 2]);
+        trans_mtx = mtx_homo(float(sys.argv[i + 1]), float(sys.argv[i + 2]))
+        return (trans_mtx);
+    else:
+        print "need one or two factors.";
+        exit();
+
+def         do_rot_sym_verb(a, i, op):
+    if len(sys.argv) - i - 1 >= 1:
+        if op == 'R':
+            print 'rotation d\'angle ', int(degrees(a)), ' degres';
+            trans_mtx = mtx_rot(a);
+        elif op == 'S':
+            print 'symetrie par rapport a un plan incline de ', int(degrees(a)),
+            print ' degres';
+            trans_mtx = mtx_sym(a);
+        return (trans_mtx);
+    else:
+        print "need an angle in degrees.";
+        exit();
+
+# Parse args and call transformation funtions below in order to get the
+# transformation matrix, then do a product of this matrix and the point given
+# in args (stored as a column vector ([3][1] matrix)).
+# print the transformation matrix and the final coordinates of the point.
+
+def         print_res(trans_mtx, p, moved):
+    print_mtx(trans_mtx);
+    print "";
+    print_vec(p);
+    print " => ",
+    print_vec(moved);
+
+def         trans_point_verbose():
+    p = matrix([[int(sys.argv[1])], [int(sys.argv[2])], [1]]);
+    i = 3;
+    while i < len(sys.argv)  * 1:
+        if i <= len(sys.argv) - 2:
+            if sys.argv[i] == 'T':
+                new_trans_mtx = do_translat_verb(i);
+                if not 'trans_mtx' in locals():
+                    trans_mtx = new_trans_mtx;
+                else:
+                    trans_mtx += new_trans_mtx;
+                i += 1;
+            elif sys.argv[i] == 'H':
+                new_trans_mtx = do_homo_verb(i);
+                if not 'trans_mtx' in locals():
+                    trans_mtx = new_trans_mtx;
+                else:
+                    trans_mtx = new_trans_mtx * trans_mtx;
+                i += 1;
+            elif sys.argv[i] == 'R' or sys.argv[i] == 'S':
+                if not 'trans_mtx' in locals():
+                    trans_mtx = matrix([[1, 1, 1],[1, 1, 1],[1, 1, 1]]);
+                new_trans_mtx = do_rot_sym_verb(radians(float(sys.argv[4])), i,
+                        sys.argv[i]);
+                trans_mtx = mtx_sym_mult(trans_mtx, new_trans_mtx);
+            else:
+                print "Wrong args.";
+                return (-1);
+            i += 2;
+        else:
+            print "wrong args";
+            return (-1);
+    moved = trans_mtx * p;
+    print_res(trans_mtx, p, moved);
+    return (0);
+
+# *********************************** FDF ************************************ #
+
+def         p_proj(p):
+    trans_mtx = mtx_proj_iso();
+    trans_mtx *= mtx_rot_x(radians(90));
+    return (trans_mtx * p);
+
+def         do_proj(Map, zoom):
+    map2D = empty((len(Map), len(Map), 3), dtype=float);
+    v = empty((3, 1), dtype=float);
+    for i in range (0, len(Map)):
+        for j in range (0, len(Map)):
+            v[0][0] = i - len (Map) / 2;
+            v[1][0] = j - len(Map) / 2;
+            v[2][0] = Map[[i],[j]] - Map[[len(Map) / 2],[len(Map) / 2]] / 2;
+            res = p_proj(v);
+            map2D[[i],[j],[0]] = res[0] * zoom + 12 * zoom;
+            map2D[[i],[j],[1]] = res[1] * zoom + 12 * zoom;
+            map2D[[i],[j],[2]] = res[2] * zoom + 12 * zoom;
+    print map2D;
+    return (map2D);
+
+##
+
+class       MapMenu():
+    Map1 = matrix([[0, 0, 0, 0, 0, 0, 0], [0, 0, 5, -8, 5, 0, 0],
+        [0, 0, -7, -10, -7, 0, 0], [0, 0, 5, 10, 5, 0, 0], [0, 0, 5, 10, 5, 0, 0],
+        [0, 10, 0, 0, 0, 10, 0], [0, 0, 0, 0, 0, 0, 0]]);
+    Map2 = matrix([[0, 0, 0, 0, 0],[0, 3, 3, 3, 0],[0, 3, 5, 3, 0],
+        [0, 3, 3, 3, 0],[0, 0, 0, 0, 0]]);
+    MapChoosen = [];
+
+    def     __init__(self):
+        d = Dialog(dialog="dialog");
+        d.set_background_title("103Architecte");
+        code, tag = d.menu(("----------[ Choose a Map ]----------"),
+        choices = [("[1]", "Small Map"), ("[2]", "Medium Map")]);
+        if code == d.OK:
+            if tag == "[1]":
+                self.MapChoosen = self.Map2;
+            else:
+                self.MapChoosen = self.Map1;
+
+    def     getMap(self):
+        return self.MapChoosen;
+                    
+class       Fdf(QtGui.QWidget):
+    map2D = [];
+    Map = [];
+    angle_x = 0.00;
+    angle_y = 0.00;
+    angle_z = 0.00;
+    translat_x = len(Map) / 2;
+    translat_y = len(Map) / 2;
+    border_x = 200;
+    border_y = 200;
+    zoom = 20;
+
+    def     __init__(self, map3D):
+        super(Fdf, self).__init__();
+        Fdf.Map = map3D;
+        print Fdf.Map;
+        Fdf.map2D = do_proj(Fdf.Map, self.zoom);
+        self.initUI();
+
+    def     initUI(self):
+        self.setGeometry(1024, 1080, 1024, 1080);
+        self.setWindowTitle('103architecte');
+        c = self.palette();
+        c.setColor(self.backgroundRole(), QtCore.Qt.black);
+        self.setPalette(c);
+        self.show();
+        self.repaint();
+        self.show();
+        print('showne..')
+
+    def     calc_trans(self, trans_mtx):
+        print 'calc trans';
+        for i in range (0, len(self.map2D)):
+            for j in range (0, len(self.map2D)):
+                v = [[float(self.map2D[[i],[j],[0]])],
+                        [float(self.map2D[[i],[j],[1]])],
+                        [float(self.map2D[[i],[j],[2]])]];
+                new = trans_mtx * v;
+                self.map2D[[i],[j],[0]] = new[0];
+                self.map2D[[i],[j],[1]] = new[1];
+                self.map2D[[i],[j],[2]] = new[2];
+
+    def     trans_map(self, t):
+        if t == 'RX':
+            self.calc_trans(mtx_rot_x(radians(self.angle_x)));
+        elif t == 'RY':
+            self.calc_trans(mtx_rot_y(radians(self.angle_y)));
+        elif t == 'RZ':
+            self.calc_trans(mtx_rot_y(radians(self.angle_z)));
+        self.update();
+
+    def     keyPressEvent(self, e):
+        if type(e) == QtGui.QKeyEvent and e.key() == QtCore.Qt.Key_Escape:
+            quit();
+        elif type(e) == QtGui.QKeyEvent and e.key() == QtCore.Qt.Key_Up:
+            if (self.angle_x > 0):
+                self.angle_x -= 1;
+            else:
+                self.angle_x += 1;
+            self.angle_x %= 2.00 * 3.14;
+            self.trans_map('RX');
+        elif type(e) == QtGui.QKeyEvent and e.key() == QtCore.Qt.Key_Down:
+            if (self.angle_x < 0):
+                self.angle_x -= 1;
+            else:
+                self.angle_x += 1;
+            self.angle_x %= 2.00 * 3.14;
+            self.trans_map('RX');
+        elif type(e) == QtGui.QKeyEvent and e.key() == QtCore.Qt.Key_Left:
+            if (self.angle_y > 0):
+                self.angle_y -= 1;
+            else:
+                self.angle_y += 1;
+            self.angle_y %= 2.00 * 3.14;
+            self.trans_map('RY');
+        elif type(e) == QtGui.QKeyEvent and e.key() == QtCore.Qt.Key_Right:
+            if (self.angle_y < 0):
+                self.angle_y -= 1;
+            else:
+                self.angle_y += 1;
+            self.angle_y %= 2.00 * 3.14;
+            self.trans_map('RY');
+        elif type(e) == QtGui.QKeyEvent and e.key() == QtCore.Qt.Key_Q:
+            if (self.angle_z > 0):
+                self.angle_z -= 1;
+            else:
+                self.angle_z += 1;
+            self.angle_z %= 2.00 * 3.14;
+            self.trans_map('RZ');
+        elif type(e) == QtGui.QKeyEvent and e.key() == QtCore.Qt.Key_E:
+            if (self.angle_z < 0):
+                self.angle_z -= 1;
+            else:
+                self.angle_z += 1;
+            self.angle_z %= 2.00 * 3.14;
+            self.trans_map('RZ');
+
+            """
+        elif type(e) == QtGui.QKeyEvent and e.key() == QtCore.Qt.Key_PageUp:
+            if (self.angle_y > 0):
+                self.angle_y -= 1;
+            else:
+                self.angle_y += 1;
+            self.angle_y %= 2.00 * 3.14;
+            self.trans_map('RY');
+        elif type(e) == QtGui.QKeyEvent and e.key() == QtCore.Qt.Key_PageDown:
+            if (self.angle_y < 0):
+                self.angle_y -= 1;
+            else:
+                self.angle_y += 1;
+            self.angle_y %= 2.00 * 3.14;
+            self.trans_map('RY');
+            """
+
+
+    def     paintEvent(self, e):
+        print 'event';
+        Paintr = QtGui.QPainter();
+        Paintr.begin(self);
+        self.drawMap(Paintr);
+        Paintr.end();
+
+    def     drawMap(self, Paintr):
+        print 'drawMap';
+        Paintr.setPen(QtCore.Qt.red);
+        size = self.size();
+        vtrans = matrix([[self.zoom * self.translat_x],[self.zoom * self.translat_y]]);
+        mapR2D = self.map2D * mtx_translat(vtrans);
+        for i in range (0, len(Fdf.map2D) - 1):
+            for j in range (0, len(Fdf.map2D) - 1):
+                vertex = QtGui.QPolygon([QtCore.QPoint(int(Fdf.map2D[[i],[j],[0]]),
+                    int(Fdf.map2D[[i],[j],[1]])),
+                    QtCore.QPoint(int(Fdf.map2D[[i + 1],[j],[0]]),
+                        int(Fdf.map2D[[i + 1],[j],[1]])),
+                    QtCore.QPoint(int(Fdf.map2D[[i],[j + 1],[0]]),
+                        int(Fdf.map2D[[i],[j + 1],[1]]))]);
+                Paintr.drawPolygon(vertex);
+                vertex = QtGui.QPolygon([QtCore.QPoint(int(Fdf.map2D[[i + 1],[j + 1],[0]]),
+                    int(Fdf.map2D[[i + 1],[j + 1],[1]])),
+                    QtCore.QPoint(int(Fdf.map2D[[i + 1],[j],[0]]),
+                        int(Fdf.map2D[[i + 1],[j],[1]])),
+                    QtCore.QPoint(int(Fdf.map2D[[i],[j + 1],[0]]),
+                        int(Fdf.map2D[[i],[j + 1],[1]]))]);
+                Paintr.drawPolygon(vertex);
+
+def         py_fdf():
+    print 'testPRint';
+    mapMenu = MapMenu();
+    Map = mapMenu.getMap();
+    print Map;
+    app = QtGui.QApplication(sys.argv);
+    fdf = Fdf(Map);
+    fdf.repaint();
+    sys.exit(app.exec_());
+
+def         main():
+    if sys.argv[1] == 'FDF':
+        return py_fdf();
+    if len(sys.argv) > 3:
+        return trans_point_verbose();
+    else:
+        print("usage: ./103architecte <x1 y1><T><x2 y2>");
+    quit();
+
+main();
