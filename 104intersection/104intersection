@@ -1,0 +1,247 @@
+#!/bin/python2
+## 104intersection.sh for test in /home/cano_c/rendu/MATHS/104intersection
+## 
+## Made by 
+## Login   <cano_c@epitech.net>
+## 
+## Started on  Wed Dec 31 20:05:53 2014 
+## Last update Wed Dec 31 20:06:00 2014 
+##
+
+import math
+from numpy import *
+import sys
+
+def         solve_poly(A, B, C):
+    delta = pow(B, 2) - 4 * A * C;
+    if delta < 0:
+        return (None, None);
+    if delta == 0:
+        try:
+            return float((B * -1) / (2 * A)), None;
+        except ZeroDivisionError, err:
+            err = str(err);
+            err += ": Vector cannot be a null one.";
+            raise (Usage(err));
+    else:
+        return float((B * -1 - sqrt(delta)) / (2 * A)), float((B * -1
+            + sqrt(delta)) / (2 * A));
+
+class       Surface():
+    def     get_inter(self, start, ray):
+        p1 = None;
+        p2 = None;
+
+        m1, m2 = self.solve_poly(start, ray);
+        if m1 is not None:
+            p1 = (ray[0] * m1 + start[0], ray[1] * m1 + start[1], ray[2]
+                    * m1 + start[2]);
+        if m2 is not None:
+            p2 = (ray[0] * m2 + start[0], ray[1] * m2 + start[1], ray[2]
+                    * m2 + start[2]);
+        return (p1, p2);
+
+    def     print_res(self, ray, start, p1, p2):
+        print 'droite passant par le point ', start, 'de vecteur directeur ',;
+        print ray;
+        print'nombre de point d\'intersection: ',;
+        if p1 is not None and p2 is not None:
+            print '2';
+            print 'point 1: ',;
+            print "{0:.3f}, {1:.3f}, {2:.3f}".format(p1[0], p1[1], p1[2]);
+            print 'point 2: ',;
+            print "{0:.3f}, {1:.3f}, {2:.3f}".format(p1[0], p2[1], p2[2]);
+        elif p1 is not None:
+            print '1';
+            print 'point 1: ', p1;
+        else:
+            print '0';
+
+
+class       Cone(Surface):
+    a = 0;
+    tana = float(0);
+    start = (0, 0, 0);
+    ray = (0, 0, 0);
+
+    def __init__(self, a):
+        self.a = a;
+        self.tana = float(math.tan(radians(a / 2)));
+
+    def     solve_poly(self, start, ray):
+        self.start = start;
+        self.ray = ray;
+        A = float(pow(ray[0], 2) + pow(ray[1], 2) - pow(ray[2] * self.tana, 2));
+        B = float(2 * ray[0] * start[0] + 2 * ray[1] * start[1] - 2 * ray[2]
+                * self.tana * start[2] * self.tana);
+        C = float(pow(start[0], 2) + pow(start[1], 2)
+                - pow(start[2] * self.tana, 2));
+        return (solve_poly(A, B, C));
+
+    def     print_res(self, p1, p2):
+        print 'Cone d\'angle ', self.a, ' degres';
+        Surface.print_res(self, self.ray, self.start, p1, p2);
+
+class       Cylinder(Surface):
+    radius = 0;
+    start = (0, 0, 0);
+    ray = (0, 0, 0);
+
+    def     __init__(self, radius):
+        self.radius = radius;
+
+    def     solve_poly(self, start, ray):
+        self.ray = ray;
+        self.start = start;
+        A = float(pow(ray[0], 2) + pow(ray[1], 2));
+        B = float(2 * ray[0] * start[0] + 2 * ray[1] * start[1]);
+        C = float(pow(start[0], 2) + pow(start[1], 2) - pow(self.radius, 2));
+        return (solve_poly(A, B, C));
+
+    def     print_res(self, p1, p2):
+        print 'Cylindre de rayon ', self.radius;
+        Surface.print_res(self, self.ray, self.start, p1, p2);
+
+class       Sphere(Surface):
+    radius = 0;
+    start = (0, 0, 0);
+    ray = (0, 0, 0);
+
+    def     __init__(self, radius):
+        self.radius = radius;
+
+    def     solve_poly(self, start, ray):
+        self.start = start;
+        self.ray = ray;
+        A = float(pow(ray[0], 2) + pow(ray[1], 2) + pow(ray[2], 2));
+        B = float(2 * ray[0] * start[0] + 2 * ray[1] * start[1] + 2 * ray[2]
+                * start[2]);
+        C = float(pow(start[0], 2) + pow(start[1], 2) + pow(start[2], 2)
+                - pow(self.radius, 2));
+        return (solve_poly(A, B, C));
+
+    def     print_res(self, p1, p2):
+        print 'Sphere de rayon ', self.radius, ' degres';
+        Surface.print_res(self, self.ray, self.start, p1, p2);
+
+
+def         inter_cylinder(point, ray, argv_r):
+    try:
+        try:
+            radius = int(argv_r);
+        except ValueError, err:
+            raise Usage(err);
+        cylinder = Cylinder(radius);
+        i1, i2 = cylinder.get_inter(point, ray);
+        cyliner.print_res(i1, i2);
+    except Usage, err:
+        return (Usage.print_msg(err));
+    return (0);
+
+def         inter_sphere(point, ray, argv_r):
+
+    def     __init__(self, radius):
+        self.radius = radius;
+
+    def     solve_poly(self, start, ray):
+        A = float(pow(ray[0], 2) + pow(ray[1], 2));
+        B = float(2 * ray[0] * start[0] + 2 * ray[1] * start[1]);
+        C = float(pow(start[0], 2) + pow(start[1], 2) - pow(self.radius, 2));
+        return (solve_poly(A, B, C));
+
+    def     print_res(self, p1, p2):
+        print 'Cylindre de rayon ', self.radius;
+        super.print_res(self, self.ray, self.start, p1, p2);
+
+def         inter_cylinder(point, ray, argv_r):
+    try:
+        try:
+            radius = int(argv_r);
+        except ValueError, err:
+            raise Usage(err);
+        cylinder = Cylinder(radius);
+        i1, i2 = cylinder.get_inter(point, ray);
+        cylinder.print_res(i1, i2);
+    except Usage, err:
+        return (Usage.print_msg(err));
+    return (0);
+
+def         inter_sphere(point, ray, argv_r):
+    try:
+        try:
+            radius = int(argv_r);
+        except ValueError, err:
+            raise Usage(err);
+        sphere = Sphere(radius);
+        i1, i2 = sphere.get_inter(point, ray);
+        sphere.print_res(i1, i2);
+    except Usage, err:
+        return (Usage.print_msg(err));
+    return (0);
+
+def         inter_cone(point, ray, argv_r):
+    try:
+        try:
+            radius = int(argv_r);
+        except ValueError, err:
+            raise Usage(err);
+        cone = Cone(radius);
+        i1, i2 = cone.get_inter(point, ray);
+        cone.print_res(i1, i2);
+    except Usage, err:
+        return (Usage.print_msg(err));
+    return (0);
+
+class       Usage(Exception):
+    def __init__(self, msg):
+        self.msg = msg;
+    
+    def print_msg(self):
+        print >>sys.stderr, self.msg;
+        print >>sys.stderr, "usage: ./104intersection: option origx origy origz",;
+        print >>sys.stderr, "rayx rayz rayz spec"
+        print >>sys.stderr, "orig: un point de la droite";
+        print >>sys.stderr, "ray: le rayon directeur de la droite";
+        print >>sys.stderr, "option:  \t1 - Sphere, spec est son rayon \n\
+                2 - Cylindre, spec est son rayon \n\
+                3 - Cone, spec est son angle";
+        return (2);
+
+def         calc_inter_ray(argv):
+    try:
+        try:
+            point = (int(argv[2]), int(argv[3]), int(argv[4]));
+            ray = int(argv[5]), int(argv[6]), int(argv[7]);
+        except ValueError, msg:
+            raise Usage(msg);
+        try:
+            op = int(sys.argv[1]);
+        except ValueError, msg:
+            raise Usage(msg);
+        if op == 1:
+            inter_sphere(point, ray, argv[8]);
+        elif op == 2:
+            inter_cylinder(point, ray, argv[8]);
+        elif op == 3:
+            inter_cone(point, ray, argv[8]);
+        else:
+            raise Usage("First argument must be an integer between 1 and 3 included.");
+    except Usage, err:
+        return (Usage.print_msg(err));
+    return (0);
+
+def         main(argv=None):
+    if argv is None:
+        argv = sys.argv;
+    try:
+        if len(argv) == 9:
+            return (calc_inter_ray(argv));
+        else:
+            raise Usage("There must be exactly 8 args.");
+    except Usage, err:
+        return (Usage.print_msg(err));
+    return (0);
+
+
+if __name__ == "__main__":
+    sys.exit(main())
