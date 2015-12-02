@@ -1,0 +1,137 @@
+#!/bin/sh
+## test for Bistro in /home/cano_c/rendu/ELEM/Bistromathique
+## 
+## Made by Chloe Cano
+## Login   <cano_c@epitech.net>
+## 
+## Started on  Sat Nov  8 21:28:06 2014
+## Last update Sun Nov  9 16:49:56 2014 Cano Chloe
+##
+
+function	compare_res()
+{
+    res=`echo $1 | ./calc "0123456789" "()+-*/t" $3`
+    if [[ "$res" != "$2" ]]; then
+	printf "\033[1;31mERROR:\033[0m $1 = %s\n" "$res"
+    else
+	printf "\033[1;32mOK:\033[0m $1 = %s\n" "$res"
+    fi
+}
+
+function	compare_res_base()
+{
+    res=`echo $1 | ./calc $3 $4 $5`
+    if [[ "$res" != "$2" ]]; then
+	printf "\033[1;31mERROR:\033[0m $1 = %s\n" "$res"
+    else
+	printf "\033[1;32mOK:\033[0m $1 = %s\n" "$res"
+    fi
+}
+
+function	do_add()
+{
+    echo "Checking addition..."
+    compare_res "00+0" "0" 4
+    compare_res "-00+0" "0" 5
+    compare_res "0+-0" "0" 4
+    compare_res "-3+-3" "-6" 5
+    compare_res "1+2" "3" 3
+    compare_res "22+1" "23" 4
+    compare_res "1+9" "10" 3
+    compare_res "9999+1" "10000" 6
+    compare_res "56+33" "89" 5
+    compare_res "654321+54329" "708650" 12
+    compare_res "54329+654321" "708650" 12
+    compare_res "0+1" "1" 3
+    compare_res "0+3" "3" 3
+    compare_res "-1+2" "1" 4
+    compare_res "-2+1" "-1" 4
+    compare_res "1+-2" "-1" 4
+    compare_res "2+1" "3" 3
+    compare_res "-1+-2" "-3" 5
+    compare_res "-2+-1" "-3" 5
+    echo ""
+}
+
+function	do_sub()
+{
+    echo "Checking substraction..."
+    compare_res "0-1" "-1" 3
+    compare_res "0-3" "-3" 3
+    compare_res "-1-2" "-3" 4
+    compare_res "-2-1" "-3" 4
+    compare_res "1--2" "3" 4
+    compare_res "2-1" "1" 3
+    compare_res "-1--2" "1" 5
+    compare_res "10000-1" "9999" 7
+    echo ""
+}
+
+function	do_mul()
+{
+    echo "Checking multiplication..."
+    compare_res "0*1" "0" 3
+    compare_res "1*0" "0" 3
+    compare_res "0*-0" "0" 4
+    compare_res "-0*0" "0" 4
+    compare_res "-2*4" "-8" 4
+    compare_res "2*-4" "-8" 4
+    compare_res "4*-2" "-8" 4
+    compare_res "9236*2" "18472" 6
+    compare_res "-2*9236" "-18472" 7
+    echo ""
+}
+
+function	do_div()
+{
+    echo "Checking division..."
+    compare_res "123/-++-00" "Syntax Error" 5
+    compare_res "1/1" "1" 3
+    compare_res "33/11" "3" 5
+    compare_res "123/1" "123" 5
+    compare_res "-123/1" "-123" 6
+    compare_res "123/-1" "-123" 6
+    compare_res "-123/-1" "123" 7
+    compare_res "123/12" "10" 6
+    compare_res "99999/99999" "1" 11
+    compare_res "12/123" "0" 6
+    echo ""
+}
+
+function	do_mod()
+{
+    echo "Checking mod..."
+    compare_res "5t0" "Syntax Error" 3
+    compare_res "0t5" "0" 3
+    compare_res "27t12" "3" 5
+    compare_res "-270t10" "0" 7
+    compare_res "279t-10" "9" 7
+    compare_res "-311t15" "-11" 7
+    echo ""
+}
+
+function	pdf_checks()
+{
+    echo "Pdf checks..."
+    compare_res_base "{3v6}" "9" "0123456789" "{}vwxyz" 5
+    compare_res_base "--++-6(12)" "Syntax Error" "0123456789" "()+-*/%" 9
+    compare_res_base "-(12-(4*32))" "116" "0123456789" "()+-*/%" 12
+    compare_res_base "-(12-(4*32)" "Syntax Error" "0123456789" "()+-*/%" 11
+    compare_res_base "-(12*(13+15/5*(6/(12+14%(30%5+(10*25)-46)+16)-20)/43)*20)*(-(12-98*42)*(16+63-50/3))" "-744629760" "0123456789" "()+-*/%" 84
+    echo ""
+}
+
+function	adv_syntax_check()
+{
+    compare_res_base "((( (((( 1)))))))" "1" "0123456789" "()+ */%" 18
+    compare_res_base "(( (((( 1)))))))" "Syntax Error" "0123456789" "()+ */%" 17
+    compare_res_base "  - + +-00000000" "0" "0123456789" "()+-*/%" 17
+    compare_res_base "-++-- - + " "Syntax Error" "0123456789" "()+-*/%" 11
+}
+
+do_sub
+do_add
+do_mul
+do_div
+do_mod
+pdf_checks
