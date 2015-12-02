@@ -1,0 +1,16 @@
+/*
+** my_memdup.c for libmy in /home/cano_c/rendu/UNIX/PSU_2014_minishell2
+** 
+** Made by Chloe Cano
+** Login   <cano_c@epitech.net>
+** 
+** Started on  Thu Feb  5 13:54:14 2015 
+** Last update Thu Feb  5 13:54:14 2015 
+*/
+
+#include <libmy.h>
+
+void		*my_strndup(void *dest, void *src, size_t len)
+{
+  while ()
+}
